@@ -1,36 +1,41 @@
 
-# 📘 Documentação Atualizada – Execução de Scripts via Azure Service Bus
+# 📘 Documentação – Execução de Scripts via Azure Service Bus
 
 ## 🧩 Visão Geral
-Este projeto permite a execução de comandos SQL armazenados em tabelas específicas no banco **DBFILA**, utilizando o **Azure Service Bus** como canal de orquestração e **Azure Functions** para processamento assíncrono.
+Execução assíncrona de comandos SQL armazenados no banco **DBFILA**, orquestrada via **Azure Service Bus** e processada por **Azure Functions**.
 
 ---
 
 ## ✅ Componentes da Solução
 
-### 1. **Banco de Dados: DBFILA**
-- Contém tabelas como `fila_analisecompras`, `fila_compras`, etc.
-- Cada tabela possui colunas como `script`, `status`, `INICIO`, `TERMINO`, `mensagem`, entre outras.
-- A view `vw_FILA` unifica os dados de todas as filas.
+### 🗄️ 1. Banco de Dados – `DBFILA`
+- Tabelas: `fila_analisecompras`, `fila_compras`, etc.
+- Colunas padrão: `script`, `status`, `INICIO`, `TERMINO`, `mensagem`
+- View unificadora: `vw_FILA`
 
-### 2. **Azure Service Bus**
-- Fila principal: `fila-analisecompras`
-- Recebe mensagens com scripts SQL a serem executados
+---
 
-### 3. **Azure Function – HTTP Trigger**
-- Endpoint: `POST /api/send-message`
-- Recebe um JSON com o campo `script`
-- Envia a mensagem para a fila `fila-analisecompras`
+### 📬 2. Azure Service Bus
+- **Fila principal:** `fila-analisecompras`
+- **Função:** Canal de mensagens com scripts SQL a serem executados
 
-### 4. **Azure Function – Service Bus Trigger**
-- Escuta a fila `fila-analisecompras`
-- Executa o script no banco `DBFILA`
-- Atualiza os campos `INICIO`, `TERMINO` e `status = 'E'`
+---
 
-### 5. **Stored Procedure no Azure SQL**
-- Nome: `EnviarScriptParaFila`
-- Utiliza `sp_invoke_external_rest_endpoint` para chamar a Azure Function HTTP
-- Permite envio de scripts diretamente via SSMS
+### ⚙️ 3. Azure Function – HTTP Trigger
+- **Endpoint:** `POST /api/send-message`
+- **Função:** Recebe JSON com `"script"` e envia para a fila
+
+---
+
+### 🔄 4. Azure Function – Service Bus Trigger
+- **Escuta:** `fila-analisecompras`
+- **Função:** Executa script no banco e atualiza status para `'E'`
+
+---
+
+### 🧪 5. Stored Procedure – `EnviarScriptParaFila`
+- **Uso:** Executada via SSMS
+- **Função:** Envia script para a Azure Function HTTP usando `sp_invoke_external_rest_endpoint`
 
 ---
 
@@ -45,12 +50,12 @@ Este projeto permite a execução de comandos SQL armazenados em tabelas especí
 ---
 
 ## 🔐 Segurança
-- A comunicação com o Service Bus é feita via connection string segura
-- A Azure Function pode ser protegida com chave de função ou identidade gerenciada
-- Recomenda-se uso de **Azure Key Vault** para armazenar segredos
+- Conexão com Service Bus via **connection string segura**
+- Azure Function protegida com **chave de função** ou **identidade gerenciada**
+- Recomendado: uso de **Azure Key Vault** para segredos
 
 ---
 
 ## 📈 Monitoramento
-- Application Insights habilitado nas Azure Functions
+- **Application Insights** habilitado nas Azure Functions
 - Logs de execução e falhas disponíveis no portal do Azure
